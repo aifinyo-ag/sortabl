@@ -7,37 +7,46 @@ module Sortabl
       module ClassMethods
 
         def sortabl parameter, *args
-
-          # Init
           unless args.empty?
             default = args[0][:default]
             only = args[0][:only]
             except = args[0][:except]
           end
 
-          raise ArgumentError.new("Do not use 'only' and 'except' together!") if only.present? and except.present?
-
-          # Set default order attribute
-          # default:
-          order_by_default = default.present? ? default : self.primary_key
-
-          # Extract column name and direction from parameter
-          if parameter.present?
-            column_name = parameter.to_s.gsub(/(_asc$|_desc$)/, '')
-            direction = parameter.to_s.gsub(/^((?!desc$|asc$).)*/, '')
-
-            # Sort by default if column_name is not included in only or column_name is included in except
-            return order((order_by_default)) if only.present? and !only.include? column_name.to_sym
-            return order((order_by_default)) if except.present? and except.include? column_name.to_sym
+          if only.present? && except.present?
+            raise ArgumentError.new "Do not use 'only' and 'except' together!"
           end
 
-          # Convert param_value to symbol
-          sort_column = { column_name.to_sym => direction.to_sym } if column_name.present? and direction.present?
+          # Set default order attribute
+          order_by_default = default.present? ? default : self.primary_key
 
-          # Order class object
-          order((sort_column or order_by_default))
+          if parameter.blank?
+            return order order_by_default
+          end
+
+          # Extract column name and direction from parameter
+          column_name = parameter.to_s.gsub(/(_asc$|_desc$)/, '')
+          direction = parameter.to_s.gsub(/^((?!desc$|asc$).)*/, '') || 'asc'
+
+          return order order_by_default if column_name.blank? || direction.blank?
+          column_name = column_name.to_sym
+          direction = direction.to_sym
+
+          return order order_by_default if only.present? && !only.include?(column_name)
+          return order order_by_default if except.present? && except.include?(column_name)
+
+          if self.respond_to? :sort_column
+            column_name = self.sort_column(column_name.to_sym) || column_name
+          end
+
+          if column_name.is_a? Symbol
+            sort_column = {column_name.to_sym => direction.to_sym}
+          else
+            sort_column = "#{column_name} #{direction}"
+          end
+
+          order sort_column
         end
-
       end
 
     end
