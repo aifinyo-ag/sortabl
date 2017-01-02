@@ -34,7 +34,7 @@ module Sortabl
         html_options.except!(:remote).merge!({'data-remote': 'true'}) if html_options[:remote]
 
         # Generate url from params
-        url = url_for(sortabl_params)
+				url = url_for(sortabl_params.permit!)
         html_options["href".freeze] ||= url
 
         content_tag("a".freeze, name || url, html_options, &block)
