@@ -6,7 +6,7 @@ module Sortabl
 
       module ClassMethods
 
-        def sortabl parameter, *args
+        def sortabl(parameter, mapping = {}, *args)
           unless args.empty?
             default = args[0][:default]
             only = args[0][:only]
@@ -35,10 +35,7 @@ module Sortabl
           return order order_by_default if only.present? && !only.include?(column_name)
           return order order_by_default if except.present? && except.include?(column_name)
 
-          if self.respond_to? :sort_column
-            column_name = self.sort_column(column_name.to_sym) || column_name
-          end
-
+          column_name = mapping[column_name.to_sym] || column_name
           if column_name.is_a? Symbol
             sort_column = {column_name.to_sym => direction.to_sym}
           else
