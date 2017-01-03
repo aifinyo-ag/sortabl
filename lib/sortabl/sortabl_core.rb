@@ -18,7 +18,7 @@ module Sortabl
           end
 
           # Set default order attribute
-          order_by_default = default.present? ? default : self.primary_key
+					order_by_default = default.present? ? default : self.primary_key.to_sym
 
           if parameter.blank?
             return order order_by_default
