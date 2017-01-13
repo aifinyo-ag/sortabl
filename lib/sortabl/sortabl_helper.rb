@@ -14,7 +14,7 @@ module Sortabl
         html_options.except!(:sort_param)
 
         # Remove current sortabl param from url and add default sortabl param
-        sortabl_params = params.except(sort_param)
+        sortabl_params = params.permit!.except(sort_param)
         sortabl_params[sort_param] = "#{attribute}_asc"
 
         # If there was already a sortabl param, invert direction or remove sortabl param
